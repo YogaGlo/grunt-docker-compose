@@ -10,64 +10,78 @@
 
 module.exports = function(grunt) {
 
-  // Project configuration.
-  grunt.initConfig({
-    jshint: {
-      all: [
-        'Gruntfile.js',
-        'tasks/*.js',
-        '<%= nodeunit.tests %>'
-      ],
-      options: {
-        jshintrc: '.jshintrc'
-      }
-    },
+	// Project configuration.
+	grunt.initConfig({
+		pkg: grunt.file.readJSON('package.json'),
 
-    // Before generating any new files, remove any previously-created files.
-    clean: {
-      tests: ['tmp']
-    },
+		jshint: {
+			all: [
+				'Gruntfile.js',
+				'tasks/*.js',
+				'<%= nodeunit.tests %>'
+			],
+			options: {
+				jshintrc: '.jshintrc'
+			}
+		},
 
-    // Configuration to be run (and then tested).
-    docker_compose: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      }
-    },
+		// Before generating any new files, remove any previously-created files.
+		clean: {
+			tests: ['tmp']
+		},
 
-    // Unit tests.
-    nodeunit: {
-      tests: ['test/*_test.js']
-    }
+		// Shell command wrappers
+		shell: {
+			echoCommand: {
+				command: [
+					'printf',
+					'"\nExecuting: ',
+					'\\033[0;33m',
+					'<%= cmd %>',
+					'\\033[0m\n"'
+				].join(' ')
+			},
+			runCommand: {
+				command: '<%= cmd %>'
+			},
+			runLongTailCommand: {
+				options: {
+					execOptions: {
+						maxBuffer: Infinity
+					}
+				},
+				command: '<%= cmd %>'
+			},
+			runStdinCommand: {
+				options: {
+					stdin: true,
+					stdinRawMode: true
+				},
+				execOptions: {
+					maxBuffer: Infinity
+				},
+				command: '<%= cmd %>'
+			},
+		},
 
-  });
+		// Unit tests.
+		nodeunit: {
+			tests: ['test/*_test.js']
+		}
 
-  // Actually load this plugin's task(s).
-  grunt.loadTasks('tasks');
+	});
 
-  // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-nodeunit');
+	require('load-grunt-tasks')(grunt);
 
-  // Whenever the "test" task is run, first clean the "tmp" dir, then run this
-  // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'docker_compose', 'nodeunit']);
+	// Actually load this plugin's task(s).
+	grunt.loadTasks('tasks');
 
-  // By default, lint and run all tests.
-  grunt.registerTask('default', ['jshint', 'test']);
+	// Whenever the "test" task is run, first clean the "tmp" dir, then run this
+	// plugin's task(s), then test the result.
+	// grunt.registerTask('test', ['clean', 'dockerCompose', 'nodeunit']);
+	grunt.registerTask('test', ['clean', 'dockerCompose']);
+
+	// By default, lint and run all tests.
+	grunt.registerTask('default', ['jshint', 'test']);
 
 };
