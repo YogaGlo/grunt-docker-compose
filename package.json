@@ -1,0 +1,40 @@
+{
+  "name": "grunt-docker-compose",
+  "description": "docker tooling for Grunt using mostly docker-compose",
+  "version": "0.1.0",
+  "homepage": "https://github.com/YogaGlo/grunt-docker-compose",
+  "author": {
+    "name": "Eugene Brodsky",
+    "email": "eugene@yogaglo.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/YogaGlo/grunt-docker-compose.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YogaGlo/grunt-docker-compose/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/YogaGlo/grunt-docker-compose/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.12.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "^0.9.2",
+    "grunt-contrib-clean": "^0.5.0",
+    "grunt-contrib-nodeunit": "^0.3.3",
+    "grunt": "~0.4.5"
+  },
+  "keywords": [
+    "gruntplugin",
+    "docker",
+    "docker-compose"
+  ]
+}
