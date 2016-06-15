@@ -17,6 +17,8 @@ module.exports = function(grunt) {
 	var spawn = require('child_process').spawnSync;
 
 	var mergeConfig = function () {
+		pkg: grunt.file.readJSON('package.json'),
+
 		grunt.config.merge({
 			// TAG, DOCKER_REGISTRY, DOCKER_REGISTRY_NAMESPACE defaults
 			// May be overridden globally by exporting these env.vars to the shell,
