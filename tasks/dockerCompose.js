@@ -26,11 +26,11 @@ module.exports = function(grunt) {
 					tag: process.env.TAG,
 					dockerRegistry: process.env.DOCKER_REGISTRY,
 					dockerRegistryNamespace: process.env.DOCKER_REGISTRY_NAMESPACE,
+					composeFile: grunt.config.get('dockerCompose.options.composeFile') || 'docker-compose.yml',
 					composeFileContent: grunt.file.readYAML('docker-compose.yml'),
 					mappedComposeFile: grunt.config.get('dockerCompose.options.mappedComposeFile') || 'docker-compose.yml',
 					debugComposeFile: grunt.config.get('dockerCompose.options.debugComposeFile') || 'docker-compose.yml'
-				},
-				up: 'dockerComposeUp'
+				}
 			},
 
 			// Shell command wrappers
