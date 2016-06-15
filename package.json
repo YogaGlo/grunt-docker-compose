@@ -1,6 +1,6 @@
 {
   "name": "grunt-docker-compose",
-  "description": "docker tooling for Grunt using mostly docker-compose",
+  "description": "Grunt plugin wrapping docker-compose commands",
   "version": "0.1.0",
   "homepage": "https://github.com/YogaGlo/grunt-docker-compose",
   "author": {

@@ -1,18 +1,18 @@
 # grunt-docker-compose
 
-> docker tooling for Grunt, using mostly `docker-compose`
+> `docker-compose` interface for Grunt
 
 ## Getting Started
 This plugin requires:
 
-	- Grunt `^0.4.5`
-	- `grunt-shell`
-	- `grunt-concurrent`
+	- grunt: "^0.4.5"
+	- grunt-shell
+	- grunt-concurrent
 
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin and its dependencies with this command:
 
 ```shell
-	npm install grunt grunt-docker-compose grunt-shell grunt-concurrent --save-dev
+npm install grunt grunt-docker-compose grunt-shell grunt-concurrent --save-dev
 ```
 
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
@@ -22,51 +22,86 @@ grunt.loadNpmTasks('grunt-docker-compose');
 ```
 
 ### Prerequisite: Docker
-It is assumed you already have your docker toolchain installed and working:
+It is assumed you already have your Docker toolchain installed and working:
 
  - `docker-compose` `>1.7.1`, 
- - `docker` `>1.11.1`,
- - latest `docker-machine` if applicable
+ - `docker` `>1.11.1`
 
 You should have at least a `docker-compose.yml` file in the working directory.
 
 If you are not familiar with Docker, please see `http://docker.io` to get started.
+
+### Tasks setup
+Add this to your Gruntfile.js to register all of the tasks as aliases to your `grunt` command:
+
+	// register all dockerCompose targets
+	['up','down','stop','restart','logs','build','pull','exec','config'].forEach(function (target) {
+		grunt.registerTask(target, function () {
+			var args = '';
+			if (this.args.length > 0) {
+				args += ':' + this.args.join(':')
+			}
+			grunt.task.run('dockerCompose:' + target + args);
+		});
+	})
+
+Now you can:
+
+- `grunt up` will execute `docker-compose up`
+- `grunt down` will execute `docker-compose down`
+- etc...
+
 
 ## The "dockerCompose" task
 
 ### Overview
 In your project's Gruntfile, add a section named `dockerCompose` to the data object passed into `grunt.initConfig()`.
 
+##### Example
+
 ```js
 grunt.initConfig({
-  dockerCompose: {
-    options: {
-      // Task-specific options go here.
-    },
-    your_target: {
-      // Target-specific file lists and/or options go here.
-    },
-  },
+	// ....... stuff .......
+	dockerCompose: {
+   		options: {
+   			mappedComposeFile: 'docker-compose-mapped.yml',
+   			dockerRegistryNamespace: 'my-web-app'
+   		}
+	}
 });
 ```
 
-##### Example
-
-
-
 ### Options
 
-##### Order of precedence
+To use the `tag`, `dockerRegistry`, and `dockerRegistryNamespace` options, you must utilize envitonment variable interpolation in your `docker-compose.yml`:
 
-	- sane defaults set by the plugin
-	- Gruntfile
-	- env.vars
-	- command line args
+```yaml
+version: '2'
+services:
+  redis:
+    image: redis
+
+  my-web-app:
+    build: .
+    image: ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/my-web-app:${TAG}
+    ports:
+      - 80:80
+.....
+```
 
 
-#### options.composeFile
+##### Order of precedence (higher options override lower ones)
 
-Name of the `docker-compose` file to use. Defaults to `docker-compose.yml`.
+0. sane defaults set by the plugin
+0. Gruntfile
+0. environment variables
+0. command line arguments
+
+E.g.:
+
+- `grunt up:foo` will set the `foo` tag instead of default `latest`,
+- `TAG=foobar grunt up` will set the `foobar` tag instead of default `latest`,
+- `TAG=baz grunt up:foo` will set the `foo` tag instead of default `latest`. Note that `TAG` is overridden, being lower precedence.
 
 #### options.dockerRegistry
 
@@ -131,41 +166,20 @@ myapp:
 Another optional `docker-compose` YAML file that extends the default and uses a different Dockerfile or other options for debug use (or whatever other purpose you may have). Same idea as above.
 
 
+#### options.composeFile (NOT YET IMPLEMENTED)
+
+Name of the `docker-compose` file to use. Defaults to `docker-compose.yml`.
+
 ### Usage Examples
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
-
-```js
-grunt.initConfig({
-  dockerCompose: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
 ```
-
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
-
-```js
-grunt.initConfig({
-  dockerCompose: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
+grunt dockerCompose:up
+grunt dockerCompose:logs
+grunt dockerCompose:build
 ```
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
-_(Nothing yet)_
+06/15/2016 0.1.0 Initial release
