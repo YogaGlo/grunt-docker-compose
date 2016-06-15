@@ -73,7 +73,7 @@ grunt.initConfig({
 
 ### Options
 
-To use the `tag`, `dockerRegistry`, and `dockerRegistryNamespace` options, you must utilize envitonment variable interpolation in your `docker-compose.yml`:
+To use the `tag`, `dockerRegistry`, and `dockerRegistryNamespace` options, you must utilize environment variable interpolation in your `docker-compose.yml`:
 
 ```yaml
 version: '2'
