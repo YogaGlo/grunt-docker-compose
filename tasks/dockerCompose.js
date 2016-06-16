@@ -152,7 +152,7 @@ module.exports = function(grunt) {
 		var cmd = buildCommandSkeleton();
 
 		cmd.push('docker-compose');
-		if (grunt.option('baked', false) && grunt.option('debug', false)) {
+		if (!grunt.option('baked') && !grunt.option('debug')) {
 			cmd.push('-f <%= dockerCompose.options.mappedComposeFile %>');
 		}
 		else if (grunt.option('debug')) {
