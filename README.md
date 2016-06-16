@@ -7,11 +7,14 @@ This plugin requires:
 
 	- grunt: "^0.4.5"
 	- grunt-shell
-	- grunt-concurrent
+
+**Important**: `grunt-shell` is a `peerDependency`. as NPM v3+ deprecates `peerDependencies`, you need to explicitly specify `grunt-shell` in your project's `devDependencies`:
+
+`npm install grunt-shell --save-dev` 
 
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin and its dependencies with this command:
 
-```shell
+```bash
 npm install grunt grunt-docker-compose grunt-shell grunt-concurrent --save-dev
 ```
 
@@ -24,8 +27,8 @@ grunt.loadNpmTasks('grunt-docker-compose');
 ### Prerequisite: Docker
 It is assumed you already have your Docker toolchain installed and working:
 
- - `docker-compose` `>1.7.1`, 
- - `docker` `>1.11.1`
+ - `docker-compose: >1.7.1`, 
+ - `docker: >1.11.1`
 
 You should have at least a `docker-compose.yml` file in the working directory.
 
@@ -34,16 +37,18 @@ If you are not familiar with Docker, please see `http://docker.io` to get starte
 ### Tasks setup
 Add this to your Gruntfile.js to register all of the tasks as aliases to your `grunt` command:
 
-	// register all dockerCompose targets
-	['up','down','stop','restart','logs','build','pull','exec','config'].forEach(function (target) {
-		grunt.registerTask(target, function () {
-			var args = '';
-			if (this.args.length > 0) {
-				args += ':' + this.args.join(':')
-			}
-			grunt.task.run('dockerCompose:' + target + args);
-		});
-	})
+```js
+// register all dockerCompose targets
+['up','down','stop','restart','logs','build','pull','exec','config'].forEach(function (target) {
+	grunt.registerTask(target, function () {
+		var args = '';
+		if (this.args.length > 0) {
+			args += ':' + this.args.join(':')
+		}
+		grunt.task.run('dockerCompose:' + target + args);
+	});
+})
+```
 
 Now you can:
 
@@ -73,7 +78,7 @@ grunt.initConfig({
 
 ### Options
 
-To use the `tag`, `dockerRegistry`, and `dockerRegistryNamespace` options, you must utilize envitonment variable interpolation in your `docker-compose.yml`:
+To use the `tag`, `dockerRegistry`, and `dockerRegistryNamespace` options, you must utilize environment variable interpolation in your `docker-compose.yml`:
 
 ```yaml
 version: '2'
@@ -107,7 +112,7 @@ E.g.:
 
 Docker Registry. Defaults to an empty string, which corresponds to DockerHub. If set, this option will set a `DOCKER_REGISTRY` environment variable before running each command. Use it by interpolation in your `docker-compose.yml` file, e.g.:
 
-```
+```yaml
 myapp:
 	image: ${DOCKER_REGISTRY}/myNamespace/myapp:some-tag
 ```
@@ -174,8 +179,35 @@ Name of the `docker-compose` file to use. Defaults to `docker-compose.yml`.
 
 ```
 grunt dockerCompose:up
+grunt dockerCompose:up:v1.0-tag
+grunt dockerCompose:up:v1.0-tag --baked
+grunt dockerCompose:up --debug
+
+grunt dockerCompose:down
+
+grunt dockerCompose:restart
+grunt dockerCompose:restart:my-app
+
 grunt dockerCompose:logs
+grunt dockerCompose:logs:my-app
+grunt dockerCompose:logs --raw
+
 grunt dockerCompose:build
+grunt dockerCompose:build:my-app
+grunt dockerCompose:build:my-app:v1.0-tag
+grunt dockerCompose:build:my-app:v1.0-tag --no-cache
+grunt dockerCompose:build:my-app:v1.0-tag --debug
+
+grunt dockerCompose:pull
+grunt dockerCompose:pull:my-app
+grunt dockerCompose:pull:my-app:v1.0-tag
+
+grunt dockerCompose:exec
+grunt dockerCompose:exec:some-service
+grunt dockerCompose:exec:some-service:some-executable
+grunt dockerCompose:exec:redis:redis-cli
+
+grunt dockerCompose:config
 ```
 
 ## Contributing
