@@ -173,7 +173,7 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeDown', 'Tear down the stack', function () {
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose down; exit 0'); // exit 0: hack to not throw a warning when other stacks' containers are still attached to this network
+		cmd.push('docker-compose down -v; exit 0'); // exit 0: hack to not throw a warning when other stacks' containers are still attached to this network
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
 		grunt.task.run('shell:runCommand');
