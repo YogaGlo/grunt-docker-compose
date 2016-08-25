@@ -80,7 +80,7 @@ module.exports = function(grunt) {
 	var buildOptionSkeleton = function () {
 		var cmd = [];
 		var options = grunt.config.getRaw('dockerCompose.options') || {};
-		if (options.composeFile) {
+		if (options.composeFile && !grunt.option('debug')) {
 			cmd.push('-f <%= dockerCompose.options.composeFile %>');
 		}
 		else if (grunt.option('debug')) {
