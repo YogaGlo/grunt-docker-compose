@@ -29,7 +29,7 @@ module.exports = function(grunt) {
 					dockerRegistry: process.env.DOCKER_REGISTRY,
 					dockerRegistryNamespace: process.env.DOCKER_REGISTRY_NAMESPACE,
 					composeFile: grunt.config.get('dockerCompose.options.composeFile') || 'docker-compose.yml',
-					composeFileContent: grunt.file.readYAML('docker-compose.yml'),
+					composeFileContent: grunt.file.readYAML(grunt.config.get('dockerCompose.options.composeFile')) || grunt.file.readYAML('docker-compose.yml'),
 					mappedComposeFile: grunt.config.get('dockerCompose.options.mappedComposeFile') || 'docker-compose.yml',
 					debugComposeFile: grunt.config.get('dockerCompose.options.debugComposeFile') || 'docker-compose.yml'
 				}
@@ -73,6 +73,18 @@ module.exports = function(grunt) {
 		}
 		if (options.dockerRegistryNamespace) {
 			cmd.push('DOCKER_REGISTRY_NAMESPACE=<%= dockerCompose.options.dockerRegistryNamespace %>');
+		}
+		return cmd;
+	};
+
+	var buildOptionSkeleton = function () {
+		var cmd = [];
+		var options = grunt.config.getRaw('dockerCompose.options') || {};
+		if (options.composeFile) {
+			cmd.push('-f <%= dockerCompose.options.composeFile %>');
+		}
+		else if (grunt.option('debug')) {
+			cmd.push('-f <%= dockerCompose.options.debugComposeFile %>');
 		}
 		return cmd;
 	};
@@ -150,14 +162,11 @@ module.exports = function(grunt) {
 
 		// only do this AFTER setting the tag. Otherwise it won't be merged into the command.
 		var cmd = buildCommandSkeleton();
-
 		cmd.push('docker-compose');
-		if (!grunt.option('baked') && !grunt.option('debug')) {
+		if (grunt.option('map') && !grunt.option('baked') && !grunt.option('debug')) {
 			cmd.push('-f <%= dockerCompose.options.mappedComposeFile %>');
 		}
-		else if (grunt.option('debug')) {
-			cmd.push('-f <%= dockerCompose.options.debugComposeFile %>');
-		}
+		cmd.push.apply(cmd, buildOptionSkeleton());
 		cmd.push('up -d');
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
@@ -173,7 +182,9 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeDown', 'Tear down the stack', function () {
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose down -v; exit 0'); // exit 0: hack to not throw a warning when other stacks' containers are still attached to this network
+		cmd.push('docker-compose'); // exit 0: hack to not throw a warning when other stacks' containers are still attached to this network
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('down; exit 0');
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
 		grunt.task.run('shell:runCommand');
@@ -188,7 +199,9 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeStop', 'Stop all containers in the stack', function () {
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose stop');
+		cmd.push('docker-compose');
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('stop');
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
 		grunt.task.run('shell:runCommand');
@@ -203,7 +216,9 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeRestart', 'Restart containers stack or service', function (service) {
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose restart');
+		cmd.push('docker-compose');
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('restart');
 		if (service) {
 			cmd.push(service);
 		}
@@ -280,11 +295,7 @@ module.exports = function(grunt) {
 
 		cmd.push('docker-compose');
 
-		// Build debug
-		if (grunt.option('debug')) {
-			cmd.push('-f <%= debugComposeFile %>');
-		}
-
+		cmd.push.apply(cmd, buildOptionSkeleton());
 		cmd.push('build');
 
 		// Rebuild
@@ -314,7 +325,9 @@ module.exports = function(grunt) {
 
 		var cmd = buildCommandSkeleton();
 
-		cmd.push('docker-compose', 'pull', '--ignore-pull-failures');
+		cmd.push('docker-compose');
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('pull', '--ignore-pull-failures');
 
 		if (service) {
 			cmd.push(service);
@@ -346,7 +359,9 @@ module.exports = function(grunt) {
 			exec = 'ash';
 		}
 
-		cmd.push ('docker-compose exec', service, exec);
+		cmd.push ('docker-compose');
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('exec', service, exec);
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
@@ -359,7 +374,9 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeConfig', 'Get compiled docker-compose config for the stack', function () {
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose config');
+		cmd.push('docker-compose');
+		cmd.push.apply(cmd, buildOptionSkeleton());
+		cmd.push('config');
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
 		grunt.task.run('shell:runCommand');
