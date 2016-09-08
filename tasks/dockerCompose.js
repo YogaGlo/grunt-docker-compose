@@ -236,7 +236,7 @@ module.exports = function(grunt) {
 
 			// TODO This should use `docker-compose logs` when service name can be removed from the log entry, and `bunyan` cooperates
 			cmd = [
-				'docker logs --tail=0 -f',
+				'docker logs --tail=10 -f',
 				'$(',
 				// these are here just to avoid annoying warnings in the shell
 				'TAG=""',
