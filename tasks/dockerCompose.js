@@ -17,8 +17,6 @@ module.exports = function(grunt) {
 	var spawn = require('child_process').spawnSync;
 
 	var mergeConfig = function () {
-		pkg: grunt.file.readJSON('package.json'),
-
 		grunt.config.merge({
 			// TAG, DOCKER_REGISTRY, DOCKER_REGISTRY_NAMESPACE defaults
 			// May be overridden globally by exporting these env.vars to the shell,
@@ -26,6 +24,8 @@ module.exports = function(grunt) {
 			dockerCompose: {
 				options: {
 					tag: process.env.TAG,
+					logTail: grunt.config.get('dockerCompose.options.logTail') || "10",
+					mainService: grunt.config.get('dockerCompose.options.mainService') || grunt.file.readJSON('package.json').name,
 					dockerRegistry: process.env.DOCKER_REGISTRY,
 					dockerRegistryNamespace: process.env.DOCKER_REGISTRY_NAMESPACE,
 					composeFile: grunt.config.get('dockerCompose.options.composeFile') || 'docker-compose.yml',
@@ -228,15 +228,15 @@ module.exports = function(grunt) {
 		var bunyanExists = (spawn('which',['bunyan']).status === 0);
 
 		var cmd = buildCommandSkeleton();
-		cmd.push('docker-compose logs --tail=0 -f');
+		cmd.push('docker-compose logs --tail=<%= dockerCompose.options.logTail %> -f');
 
 		// If service is unspecified, only tail the main service's logs.
 		if (!service) {
-			service = '<%= pkg.name %>';
+			service = '<%= dockerCompose.options.mainService %>';
 
 			// TODO This should use `docker-compose logs` when service name can be removed from the log entry, and `bunyan` cooperates
 			cmd = [
-				'docker logs --tail=0 -f',
+				'docker logs --tail=<%= dockerCompose.options.logTail %> -f',
 				'$(',
 				// these are here just to avoid annoying warnings in the shell
 				'TAG=""',
@@ -336,7 +336,7 @@ module.exports = function(grunt) {
 		*/
 	grunt.registerTask('dockerComposeExec', 'Execute a command in a containter', function (service, exec) {
 		if (!service) {
-			service = '<%= pkg.name %>';
+			service = '<%= dockerCompose.options.mainService %>';
 		}
 
 		var cmd = buildCommandSkeleton();

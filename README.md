@@ -5,7 +5,7 @@
 ## Getting Started
 This plugin requires:
 
-	- grunt: "^0.4.5"
+	- grunt: "^1.0.1"
 	- grunt-shell
 
 **Important**: `grunt-shell` is a `peerDependency`. as NPM v3+ deprecates `peerDependencies`, you need to explicitly specify `grunt-shell` in your project's `devDependencies`:
@@ -140,6 +140,13 @@ myapp:
 	image: ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/myapp:${TAG}
 ```
 
+#### options.mainService
+
+The name of your "main" service in the docker-compose file. This is the service whose logs will be tailed by default (and piped through `bunyan`) when doing `grunt logs`
+
+#### options.logTail
+
+How many lines of log to tail initially when starting to tail the logs. Defaults to 10.
 
 #### options.mappedComposeFile
 
