@@ -5,7 +5,7 @@
 ## Getting Started
 This plugin requires:
 
-	- grunt: "^0.4.5"
+	- grunt: "^1.0.1"
 	- grunt-shell
 
 **Important**: `grunt-shell` is a `peerDependency`. as NPM v3+ deprecates `peerDependencies`, you need to explicitly specify `grunt-shell` in your project's `devDependencies`:
