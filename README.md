@@ -140,6 +140,13 @@ myapp:
 	image: ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAMESPACE}/myapp:${TAG}
 ```
 
+#### options.mainService
+
+The name of your "main" service in the docker-compose file. This is the service whose logs will be tailed by default (and piped through `bunyan`) when doing `grunt logs`
+
+#### options.logTail
+
+How many lines of log to tail initially when starting to tail the logs. Defaults to 10.
 
 #### options.mappedComposeFile
 
