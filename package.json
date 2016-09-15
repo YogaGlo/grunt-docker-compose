@@ -36,6 +36,7 @@
     "docker-compose"
   ],
   "dependencies": {
+    "async": "^2.0.1",
     "load-grunt-tasks": "^3.5.0"
   }
 }
