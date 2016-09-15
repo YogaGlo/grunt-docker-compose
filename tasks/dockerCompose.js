@@ -225,7 +225,10 @@ module.exports = function(grunt) {
 	grunt.registerTask('dockerComposeLogs', 'Display container logs', function (service) {
 
 		// is bunyan cli installed?
-		var bunyanExists = (spawn('which',['bunyan']).status === 0);
+		var bunyanExists = (spawn('command',['-v','bunyan']).status === 0),
+			servicesRunning;
+
+		console.log(spawn('docker-compose',['ps', '|', 'grep', 'Exit']).stdout.length);
 
 		var cmd = buildCommandSkeleton();
 		cmd.push('docker-compose logs --tail=<%= dockerCompose.options.logTail %> -f');
@@ -233,25 +236,14 @@ module.exports = function(grunt) {
 		// If service is unspecified, only tail the main service's logs.
 		if (!service) {
 			service = '<%= dockerCompose.options.mainService %>';
-
-			// TODO This should use `docker-compose logs` when service name can be removed from the log entry, and `bunyan` cooperates
-			cmd = [
-				'docker logs --tail=<%= dockerCompose.options.logTail %> -f',
-				'$(',
-				// these are here just to avoid annoying warnings in the shell
-				'TAG=""',
-				'DOCKER_REGISTRY=""',
-				'DOCKER_REGISTRY_NAMESPACE=""',
-				'docker-compose ps -q',
-				service,
-				')'];
-		}
-		else if (service !== 'all') {
-			cmd.push(service);
 		}
 
 		if (!grunt.option('raw') && bunyanExists) {
-			cmd.push('| bunyan --color -o short');
+			cmd.push('--no-color');
+			if (service !== 'all') {
+				cmd.push(service);
+			}
+			cmd.push(' | sed "s/^.*| *{/{/" | bunyan --color -o short');
 		}
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
@@ -260,7 +252,9 @@ module.exports = function(grunt) {
 		// Implement a check to run logs ONLY if at least 1 service is running. (how?)
 		// (May be resolved when bunyan cooperates - will not need recursion then?)
 		logCommand();
-		grunt.task.run('shell:runLongTailCommand', 'dockerComposeLogs');
+
+		// var servicesRunning = (spawn('docker-compose',['ps', '-q']).status === 0);
+		grunt.task.run('shell:runLongTailCommand');
 	});
 
 	/** dockerComposeBuild builds containers for services that have an 'build` key specified in the docker-compose file.
