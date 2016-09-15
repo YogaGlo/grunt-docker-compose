@@ -236,14 +236,25 @@ module.exports = function(grunt) {
 		// If service is unspecified, only tail the main service's logs.
 		if (!service) {
 			service = '<%= dockerCompose.options.mainService %>';
+
+			// TODO This should use `docker-compose logs` when service name can be removed from the log entry, and `bunyan` cooperates
+			cmd = [
+				'docker logs --tail=<%= dockerCompose.options.logTail %> -f',
+				'$(',
+				// these are here just to avoid annoying warnings in the shell
+				'TAG=""',
+				'DOCKER_REGISTRY=""',
+				'DOCKER_REGISTRY_NAMESPACE=""',
+				'docker-compose ps -q',
+				service,
+				')'];
+		}
+		else if (service !== 'all') {
+			cmd.push(service);
 		}
 
 		if (!grunt.option('raw') && bunyanExists) {
-			cmd.push('--no-color');
-			if (service !== 'all') {
-				cmd.push(service);
-			}
-			cmd.push(' | sed "s/^.*| *{/{/" | bunyan --color -o short');
+			cmd.push('| bunyan --color -o short');
 		}
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
