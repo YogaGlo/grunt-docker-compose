@@ -14,9 +14,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-concurrent');
 	grunt.loadNpmTasks('grunt-shell');
 
-	var spawn = require('child_process').spawnSync,
-		util = require('util'),
-		async = require('async');
+	var spawn = require('child_process').spawnSync;
 
 	var mergeConfig = function () {
 		grunt.config.merge({
@@ -253,22 +251,29 @@ module.exports = function(grunt) {
 
 		// do we have any services running?
 		function servicesRunning() {
-	 		// get the stdout of docker-compose ps, and drop the top 2 lines. Store the rest as Array.
-			var composeOutLines = spawn('docker-compose', ['ps']).stdout.toString().split('\n').slice(2),
+			var composeArgs = ['ps'];
+
+			// If we're tailing just the main service's logs, then we only check that service
+			if (service === '<%= dockerCompose.options.mainService %>') {
+				composeArgs.push(grunt.config.get('dockerCompose.options.mainService'));
+			}
+
+			// get the stdout of docker-compose ps, store as Array, and drop the header lines.
+			var serviceList = spawn('docker-compose', composeArgs).stdout.toString().split('\n').slice(2),
 				upCount = 0;
 
 			// if we are left with 1 line or less, then nothing is running.
-			if (composeOutLines.length <= 1) {
-				return false
+			if (serviceList.length <= 1) {
+				return false;
 			}
 
-			function isUp(line) {
-				if (line.indexOf('Up') > 0) {
+			function isUp(service) {
+				if (service.indexOf('Up') > 0) {
 					upCount++;
 				}
 			}
 
-			composeOutLines.forEach(isUp)
+			serviceList.forEach(isUp);
 
 			return upCount > 0;
 		}

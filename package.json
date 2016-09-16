@@ -1,7 +1,7 @@
 {
   "name": "grunt-docker-compose",
   "description": "Grunt plugin wrapping docker-compose commands",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/YogaGlo/grunt-docker-compose",
   "author": {
     "name": "Eugene Brodsky",
@@ -36,7 +36,6 @@
     "docker-compose"
   ],
   "dependencies": {
-    "async": "^2.0.1",
     "load-grunt-tasks": "^3.5.0"
   }
 }
