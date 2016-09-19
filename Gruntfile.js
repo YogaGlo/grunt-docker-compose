@@ -61,7 +61,7 @@ module.exports = function(grunt) {
 					maxBuffer: Infinity
 				},
 				command: '<%= cmd %>'
-			},
+			}
 		},
 
 		// Unit tests.

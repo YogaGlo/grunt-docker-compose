@@ -221,11 +221,9 @@ module.exports = function(grunt) {
 		* Usage:
 		*		- grunt dockerComposeLogs[:service |:all] [--raw]
 	*/
-	// TODO this does the job for now, but really this whole thing should be refactored.
 	grunt.registerTask('dockerComposeLogs', 'Display container logs', function (service) {
-
 		// is bunyan cli installed?
-		var bunyanExists = (spawn('which',['bunyan']).status === 0);
+		var bunyanExists = (spawn('command', ['-v','bunyan']).status === 0);
 
 		var cmd = buildCommandSkeleton();
 		cmd.push('docker-compose logs --tail=<%= dockerCompose.options.logTail %> -f');
@@ -234,17 +232,12 @@ module.exports = function(grunt) {
 		if (!service) {
 			service = '<%= dockerCompose.options.mainService %>';
 
-			// TODO This should use `docker-compose logs` when service name can be removed from the log entry, and `bunyan` cooperates
+			// TODO This should use `docker-compose logs` when bunyan cooperates with the -f option.
+			// see commit 14b2b9886e19190361c203fcf1d6d0ae28b35b13 for rough implementation, incl. sed regex
 			cmd = [
 				'docker logs --tail=<%= dockerCompose.options.logTail %> -f',
-				'$(',
-				// these are here just to avoid annoying warnings in the shell
-				'TAG=""',
-				'DOCKER_REGISTRY=""',
-				'DOCKER_REGISTRY_NAMESPACE=""',
-				'docker-compose ps -q',
-				service,
-				')'];
+				'$(docker-compose ps -q ' + service + ' 2>/dev/null)' // the stderr is sent to /dev/null to avoid warnings.
+			];
 		}
 		else if (service !== 'all') {
 			cmd.push(service);
@@ -256,11 +249,39 @@ module.exports = function(grunt) {
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 
-		// TODO: if all services are stopped, recursion makes this command run indefinitely, and it must be terminated manually.
-		// Implement a check to run logs ONLY if at least 1 service is running. (how?)
-		// (May be resolved when bunyan cooperates - will not need recursion then?)
-		logCommand();
-		grunt.task.run('shell:runLongTailCommand', 'dockerComposeLogs');
+		// do we have any services running?
+		function servicesRunning() {
+			var composeArgs = ['ps'];
+
+			// If we're tailing just the main service's logs, then we only check that service
+			if (service === '<%= dockerCompose.options.mainService %>') {
+				composeArgs.push(grunt.config.get('dockerCompose.options.mainService'));
+			}
+
+			// get the stdout of docker-compose ps, store as Array, and drop the header lines.
+			var serviceList = spawn('docker-compose', composeArgs).stdout.toString().split('\n').slice(2),
+				upCount = 0;
+
+			// if we are left with 1 line or less, then nothing is running.
+			if (serviceList.length <= 1) {
+				return false;
+			}
+
+			function isUp(service) {
+				if (service.indexOf('Up') > 0) {
+					upCount++;
+				}
+			}
+
+			serviceList.forEach(isUp);
+
+			return upCount > 0;
+		}
+
+		// recursively run the logs command until all services quit.
+		if (servicesRunning()) {
+			grunt.task.run('shell:runLongTailCommand', 'dockerComposeLogs');
+		}
 	});
 
 	/** dockerComposeBuild builds containers for services that have an 'build` key specified in the docker-compose file.
