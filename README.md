@@ -10,7 +10,7 @@ This plugin requires:
 
 **Important**: `grunt-shell` is a `peerDependency`. as NPM v3+ deprecates `peerDependencies`, you need to explicitly specify `grunt-shell` in your project's `devDependencies`:
 
-`npm install grunt-shell --save-dev` 
+`npm install grunt-shell --save-dev`
 
 If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin and its dependencies with this command:
 
@@ -27,7 +27,7 @@ grunt.loadNpmTasks('grunt-docker-compose');
 ### Prerequisite: Docker
 It is assumed you already have your Docker toolchain installed and working:
 
- - `docker-compose: >1.7.1`, 
+ - `docker-compose: >1.7.1`,
  - `docker: >1.11.1`
 
 You should have at least a `docker-compose.yml` file in the working directory.
@@ -168,7 +168,7 @@ myapp:
 	extends:
 		file: docker-compose.yml
 		service: myapp
-	volumes: 
+	volumes:
 		- ./src:/usr/local/src/myapp
 ```
 
@@ -186,8 +186,8 @@ Name of the `docker-compose` file to use. Defaults to `docker-compose.yml`.
 
 ```
 grunt dockerCompose:up
-grunt dockerCompose:up:v1.0-tag
-grunt dockerCompose:up:v1.0-tag --baked
+grunt dockerCompose:up:my-app:v1.0-tag
+grunt dockerCompose:up:my-app:v1.0-tag --baked
 grunt dockerCompose:up --debug
 
 grunt dockerCompose:down

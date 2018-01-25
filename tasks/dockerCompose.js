@@ -143,7 +143,7 @@ module.exports = function(grunt) {
 		*	Usage:
 		*		- grunt dockerComposeUp[:tag] [--baked | --debug]
 		*/
-	grunt.registerTask('dockerComposeUp', 'Launch the docker-compose stack', function (tag) {
+	grunt.registerTask('dockerComposeUp', 'Launch the docker-compose stack', function (service, tag) {
 		if (tag) {
 			grunt.config.set('dockerCompose.options.tag', tag);
 		}
@@ -159,6 +159,10 @@ module.exports = function(grunt) {
 			cmd.push('-f <%= dockerCompose.options.debugComposeFile %>');
 		}
 		cmd.push('up -d');
+
+		if (service) {
+			cmd.push(service);
+		}
 
 		grunt.config.set('dockerCompose.options.cmd', cmd.join(' '));
 		logCommand();
